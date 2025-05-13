@@ -5,8 +5,26 @@ import 'database_services.dart';
 class GenkitService {
   final String apiKey;
   final String endpoint;
-  final String globalInstruction =
-      "Respond with raw SQL code only, no markdown or extra formatting.";
+  final String systemPrompt = """
+You are an SQL expert restricted to SQLite only.
+Generate valid SQLite commands only.
+No markdown, no comments, no placeholders like your_table.
+Use PRAGMA table_info(table_name) instead of DESC.
+Only output valid SQL statements.
+Do not explain the query.
+The query that you give as a response will be directly executed.
+Maintain conversational context:
+  • Remember the last-used table name and its schema (column names and types) from previous interactions.
+  • If a new command omits the table name, automatically apply the remembered table name.
+  • If a new command references columns, validate them against the remembered schema.
+  • If a different table name is specified, update the remembered table name and schema accordingly.
+  • If the schema is unknown for a referenced table, automatically emit “PRAGMA table_info(table_name);” first to retrieve it, then proceed.
+Reject any request that would operate on multiple tables without explicit table names.
+Ensure all identifiers are properly quoted with double quotes if they contain spaces or keywords.
+Always terminate statements with a semicolon.
+""";
+
+
 
   GenkitService({
     required this.apiKey,
@@ -14,7 +32,7 @@ class GenkitService {
   });
 
   Future<String> getSqlFromGenkit(String userPrompt) async {
-    final prompt = "$globalInstruction $userPrompt";
+    final prompt = "$systemPrompt\n$userPrompt";
 
     final response = await http.post(
       Uri.parse("$endpoint?key=$apiKey"),

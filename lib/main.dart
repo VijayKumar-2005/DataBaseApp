@@ -1,22 +1,24 @@
-import 'package:databaseapp/Screens/chatscreen.dart';
-import 'package:databaseapp/Screens/console.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'Screens/chatscreen.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   String apiKey = dotenv.env['API_KEY'] ?? "API_KEY_NOT_FOUND";
-  runApp(MyApp(apikey: apiKey,));
+  runApp(MyApp(apikey: apiKey));
 }
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key,required this.apikey});
+  const MyApp({super.key, required this.apikey});
   final String apikey;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'SQL Chatbot',
       debugShowCheckedModeBanner: false,
-      home: ChatScreen(apikey: apikey,),
+      home: ChatScreen(apikey: apikey),
     );
   }
 }
