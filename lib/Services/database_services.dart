@@ -6,10 +6,8 @@ import 'package:path_provider/path_provider.dart';
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._internal();
   DatabaseService._internal();
-
-  static const _databaseName = 'user_database.db';
+  String _databaseName = "user_database.db";
   static const _databaseVersion = 1;
-
   Database? _database;
 
   Future<Database> get database async {
@@ -66,7 +64,6 @@ class DatabaseService {
     final db = await database;
     try {
       final lowered = query.trim().toLowerCase();
-
       if (lowered == 'tables') {
         final result = await db.rawQuery(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
@@ -74,25 +71,20 @@ class DatabaseService {
         return result.isNotEmpty
             ? result.map((row) => row['name'].toString()).toList()
             : ['No tables found.'];
-
       } else if (lowered.startsWith('select')) {
         final result = await db.rawQuery(query);
         return result.isNotEmpty
             ? result.map((row) => _formatRow(row)).toList()
             : ['(No rows returned)'];
-
       } else if (lowered.startsWith('insert')) {
         final count = await db.rawInsert(query);
         return ['Insert executed successfully. Affected rows: ${count > 0 ? 1 : 0}'];
-
       } else if (lowered.startsWith('update')) {
         final count = await db.rawUpdate(query);
         return ['Update executed successfully. Affected rows: $count'];
-
       } else if (lowered.startsWith('delete')) {
         final count = await db.rawDelete(query);
         return ['Delete executed successfully. Affected rows: $count'];
-
       } else {
         await db.execute(query);
         return ['Query executed successfully.'];
@@ -102,9 +94,13 @@ class DatabaseService {
     }
   }
 
-
   String _formatRow(Map<String, dynamic> row) {
     return row.entries.map((e) => '${e.key}: ${e.value}').join(' | ');
+  }
+
+  void changeDatabaseName(String name) {
+    _databaseName = name;
+    _database = null;
   }
 
   Future<void> close() async {
