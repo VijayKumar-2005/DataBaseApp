@@ -1,6 +1,6 @@
+import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'Screens/chatscreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'SQL Chatbot',
       debugShowCheckedModeBanner: false,
-      home: ChatScreen(apikey: apikey),
+      home: SqlHomePage(apikey: apikey),
     );
   }
 }
