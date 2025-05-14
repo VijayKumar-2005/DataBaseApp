@@ -60,39 +60,53 @@ class DatabaseService {
     return await db.rawDelete(sql, arguments);
   }
 
-  Future<List<String>> executeQuery(String query) async {
+  Future<List<String>> executeQuery(String sql) async {
     final db = await database;
-    try {
-      final lowered = query.trim().toLowerCase();
-      if (lowered == 'tables') {
-        final result = await db.rawQuery(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
-        );
-        return result.isNotEmpty
-            ? result.map((row) => row['name'].toString()).toList()
-            : ['No tables found.'];
-      } else if (lowered.startsWith('select')) {
-        final result = await db.rawQuery(query);
-        return result.isNotEmpty
-            ? result.map((row) => _formatRow(row)).toList()
-            : ['(No rows returned)'];
-      } else if (lowered.startsWith('insert')) {
-        final count = await db.rawInsert(query);
-        return ['Insert executed successfully. Affected rows: ${count > 0 ? 1 : 0}'];
-      } else if (lowered.startsWith('update')) {
-        final count = await db.rawUpdate(query);
-        return ['Update executed successfully. Affected rows: $count'];
-      } else if (lowered.startsWith('delete')) {
-        final count = await db.rawDelete(query);
-        return ['Delete executed successfully. Affected rows: $count'];
-      } else {
-        await db.execute(query);
-        return ['Query executed successfully.'];
+    final results = <String>[];
+
+    final statements = sql
+        .split(';')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    for (var statement in statements) {
+      final lowered = statement.toLowerCase();
+
+      try {
+        if (lowered == 'tables') {
+          final result = await db.rawQuery(
+              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
+          );
+          results.add(result.isNotEmpty
+              ? result.map((row) => row['name'].toString()).join('\n')
+              : 'No tables found.');
+        } else if (lowered.startsWith('select')) {
+          final rows = await db.rawQuery(statement);
+          results.add(rows.isNotEmpty
+              ? rows.map((row) => _formatRow(row)).join('\n')
+              : '(No rows returned)');
+        } else if (lowered.startsWith('insert')) {
+          final count = await db.rawInsert(statement);
+          results.add('Insert executed successfully. Affected rows: ${count > 0 ? 1 : 0}');
+        } else if (lowered.startsWith('update')) {
+          final count = await db.rawUpdate(statement);
+          results.add('Update executed successfully. Affected rows: $count');
+        } else if (lowered.startsWith('delete')) {
+          final count = await db.rawDelete(statement);
+          results.add('Delete executed successfully. Affected rows: $count');
+        } else {
+          await db.execute(statement);
+          results.add('Query executed successfully: $statement');
+        }
+      } catch (e) {
+        results.add('Error executing "$statement": $e');
       }
-    } catch (e) {
-      return ['Error: ${e.toString()}'];
     }
+
+    return results;
   }
+
 
   String _formatRow(Map<String, dynamic> row) {
     return row.entries.map((e) => '${e.key}: ${e.value}').join(' | ');
@@ -109,4 +123,20 @@ class DatabaseService {
       _database = null;
     }
   }
+  Future<void> clearAllTables() async {
+    final db = await database;
+
+    // Query to get all the table names
+    final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+
+    // Iterate through each table and delete all rows
+    for (var table in tables) {
+      final tableName = table['name'];
+      if (tableName != null) {
+        await db.rawDelete("DELETE FROM $tableName");
+      }
+    }
+  }
+
 }

@@ -71,8 +71,16 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: const Text('SQL Chatbot'),
-        backgroundColor: Colors.deepPurple.shade700,
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.deepPurple, Colors.purpleAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
