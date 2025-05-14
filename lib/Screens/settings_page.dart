@@ -105,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(color: Colors.white30),
           ListTile(
             title: const Text('About', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('DatabaseApp by YourName\nA sleek local SQL tester.',
+            subtitle: const Text('DatabaseApp by Vijaykumar Pandian\nA sleek local SQL tester and a \npassionate App/Game Developer.',
                 style: TextStyle(color: Colors.white60)),
             leading: const Icon(Icons.info_outline, color: Colors.white70),
           ),
