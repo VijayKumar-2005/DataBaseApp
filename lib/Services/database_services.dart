@@ -1,14 +1,24 @@
 import 'dart:io';
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'hive_service.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._internal();
   DatabaseService._internal();
-  String _databaseName = "user_database.db";
+
+  String _databaseName = '';
   static const _databaseVersion = 1;
   Database? _database;
+
+  Future<void> initialize() async {
+    _databaseName = await _getDatabaseNameFromHive() ?? "user_database.db";
+  }
+
+  Future<String?> _getDatabaseNameFromHive() async {
+    return await HiveService.getValue("databsename");
+  }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -107,12 +117,12 @@ class DatabaseService {
     return results;
   }
 
-
   String _formatRow(Map<String, dynamic> row) {
     return row.entries.map((e) => '${e.key}: ${e.value}').join(' | ');
   }
 
-  void changeDatabaseName(String name) {
+  Future<void> changeDatabaseName(String name) async {
+    await close();
     _databaseName = name;
     _database = null;
   }
@@ -123,20 +133,28 @@ class DatabaseService {
       _database = null;
     }
   }
+
   Future<void> clearAllTables() async {
     final db = await database;
+    final names = await executeQuery("tables");
 
-    // Query to get all the table names
-    final tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+    final allNames = names
+        .expand((name) => name.split('\n'))
+        .map((name) => name.trim())
+        .where((name) =>
+    name.isNotEmpty &&
+        name != 'android_metadata' &&
+        name != 'sqlite_sequence')
+        .toList();
 
-    // Iterate through each table and delete all rows
-    for (var table in tables) {
-      final tableName = table['name'];
-      if (tableName != null) {
-        await db.rawDelete("DELETE FROM $tableName");
-      }
+    for (final table in allNames) {
+      await db.rawDelete('DELETE FROM "$table"');
     }
   }
 
+  Future<String> getDatabaseLocation(String dbName) async {
+    final directory = await getDatabasesPath();
+    String dbPath = '$directory/$dbName';
+    return dbPath;
+  }
 }

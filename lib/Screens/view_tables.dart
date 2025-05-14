@@ -22,22 +22,15 @@ class _ViewTablesPageState extends State<ViewTablesPage> {
 
   Future<void> _loadTables() async {
     final names = await DatabaseService.instance.executeQuery("tables");
-
+    final allNames = names
+        .expand((name) => name.split('\n'))
+        .where((name) => name.isNotEmpty && !name.startsWith('No tables'))
+        .toList();
     setState(() {
-      tableNames = names
-          .where((name) => name.isNotEmpty && !name.startsWith('No tables') && name != 'android_metadata' && name != 'emp')
-          .toList();
+      tableNames = allNames;
       isLoading = false;
     });
-
-    print(tableNames.length);
   }
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
