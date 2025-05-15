@@ -36,7 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _loadDatabaseLocation() async {
-    String dbName = _databaseName.isEmpty ? " " : _databaseName;
+    String dbName = _databaseName;
     String dbLocation = await DatabaseService.instance.getDatabaseLocation(dbName);
     setState(() {
       _databaselocation = dbLocation;
