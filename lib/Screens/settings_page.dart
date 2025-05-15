@@ -18,10 +18,15 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _loadDatabaseName();
-    _loadThemePreference();
-    _loadDatabaseLocation();
+    _initializeSettings();
   }
+
+  Future<void> _initializeSettings() async {
+    await _loadDatabaseName();
+    await _loadDatabaseLocation();
+    _loadThemePreference();
+  }
+
 
   Future<void> _loadDatabaseName() async {
     String dbName = await HiveService.getValue("databsename") ?? "Default Name";
