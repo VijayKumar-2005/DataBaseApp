@@ -4,6 +4,8 @@ import 'package:databaseapp/Screens/settings_page.dart';
 import 'package:databaseapp/Screens/view_tables.dart';
 import 'package:flutter/material.dart';
 
+import 'export_page.dart';
+
 class SqlHomePage extends StatelessWidget {
   final String apikey;
   const SqlHomePage({super.key, required this.apikey});
@@ -26,6 +28,18 @@ class SqlHomePage extends StatelessWidget {
                   'SQL Tools Menu',
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DatabaseInfoPage()),
+                );
+              },
+              child: ListTile(
+                leading: Icon(Icons.import_export, color: Colors.white),
+                title: Text('Export database', style: TextStyle(color: Colors.white)),
               ),
             ),
             GestureDetector(
