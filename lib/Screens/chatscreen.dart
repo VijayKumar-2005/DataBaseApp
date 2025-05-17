@@ -13,13 +13,31 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<Message> _messages = [];
   late GenkitService _genkitService;
-  bool _isBotTyping = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _genkitService = GenkitService(apiKey: widget.apikey);
     _addBotMessage("Hello! I'm your AI SQL assistant. How can I help you? 😊");
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void _addBotMessage(String text) {
@@ -30,21 +48,34 @@ class _ChatScreenState extends State<ChatScreen> {
         timestamp: DateTime.now(),
       ));
     });
+    _scrollToBottom();
   }
 
   Future<void> _getBotResponse(String message) async {
     _addBotMessage("Thinking...");
-    final responses = await _genkitService.runGenkitSql(message);
-    setState(() {
-      _messages.removeLast();
-      for (final res in responses) {
+    try {
+      final responses = await _genkitService.processUserQuery(message);
+      setState(() {
+        _messages.removeLast(); // Remove "Thinking..."
+        for (final res in responses) {
+          _messages.add(Message(
+            text: res,
+            isMe: false,
+            timestamp: DateTime.now(),
+          ));
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _messages.removeLast(); // Remove "Thinking..." on error
         _messages.add(Message(
-          text: res,
+          text: "Sorry, an error occurred. Please try again.",
           isMe: false,
           timestamp: DateTime.now(),
         ));
-      }
-    });
+      });
+    }
+    _scrollToBottom();
   }
 
   void _sendMessage() {
@@ -57,12 +88,9 @@ class _ChatScreenState extends State<ChatScreen> {
         isMe: true,
         timestamp: DateTime.now(),
       ));
-      _isBotTyping = true;
     });
-    Future.delayed(const Duration(milliseconds: 500), () async {
-      setState(() => _isBotTyping = false);
-      await _getBotResponse(message);
-    });
+    _scrollToBottom();
+    _getBotResponse(message); // Process immediately without delay
   }
 
   @override
@@ -86,15 +114,12 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _messages.length + (_isBotTyping ? 1 : 0),
+              itemCount: _messages.length,
               itemBuilder: (context, index) {
-                if (index < _messages.length) {
-                  final message = _messages[index];
-                  return _buildMessageBubble(message);
-                } else {
-                  return _buildTypingIndicator();
-                }
+                final message = _messages[index];
+                return _buildMessageBubble(message);
               },
             ),
           ),
@@ -118,9 +143,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: const Text("AI", style: TextStyle(color: Colors.white)),
             ),
           if (!message.isMe) const SizedBox(width: 8),
-
           if (message.isMe) const Spacer(),
-
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -154,66 +177,14 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-
           if (message.isMe) const SizedBox(width: 8),
           if (message.isMe)
             CircleAvatar(
               backgroundColor: Colors.blue.shade700,
-              child: const Text("U", style: TextStyle(color: Colors.white)),
+              child: const Icon(Icons.person, color: Colors.white),
             ),
         ],
       ),
-    );
-  }
-
-
-  Widget _buildTypingIndicator() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.deepPurple.shade800,
-            child: const Text("AI"),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade800,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildDot(delay: 0),
-                const SizedBox(width: 4),
-                _buildDot(delay: 200),
-                const SizedBox(width: 4),
-                _buildDot(delay: 400),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDot({required int delay}) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: Colors.deepPurple.shade300,
-        shape: BoxShape.circle,
-      ),
-      margin: const EdgeInsets.only(bottom: 4),
     );
   }
 
@@ -229,10 +200,11 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: TextField(
+              style: const TextStyle(color: Colors.white),
               controller: _messageController,
               decoration: InputDecoration(
                 hintText: "Type a SQL question...",
-                hintStyle: TextStyle(color: Colors.white54),
+                hintStyle: TextStyle(color: Colors.white70),
                 filled: true,
                 fillColor: Colors.grey.shade800,
                 border: OutlineInputBorder(
@@ -246,7 +218,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.send, color: Colors.white54),
+            icon: const Icon(Icons.send, color: Colors.white70),
             onPressed: _sendMessage,
           ),
         ],
