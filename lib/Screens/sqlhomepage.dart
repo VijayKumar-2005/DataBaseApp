@@ -90,7 +90,7 @@ class SqlHomePage extends StatelessWidget {
               icon: Icons.table_chart_outlined,
               title: 'View Tables',
               subtitle: 'Browse and inspect database tables',
-              destination: ViewTablesPage(apikey: apikey),
+              destination: ViewTablesPage(),
             ),
           ],
         ),

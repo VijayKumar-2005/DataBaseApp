@@ -117,7 +117,10 @@ class _ChatScreenState extends State<ChatScreen> {
               backgroundColor: Colors.deepPurple.shade800,
               child: const Text("AI", style: TextStyle(color: Colors.white)),
             ),
-          const SizedBox(width: 8),
+          if (!message.isMe) const SizedBox(width: 8),
+
+          if (message.isMe) const Spacer(),
+
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -151,10 +154,18 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
+
+          if (message.isMe) const SizedBox(width: 8),
+          if (message.isMe)
+            CircleAvatar(
+              backgroundColor: Colors.blue.shade700,
+              child: const Text("U", style: TextStyle(color: Colors.white)),
+            ),
         ],
       ),
     );
   }
+
 
   Widget _buildTypingIndicator() {
     return Padding(

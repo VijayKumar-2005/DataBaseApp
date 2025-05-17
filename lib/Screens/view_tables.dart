@@ -3,8 +3,7 @@ import '../Services/database_services.dart';
 import 'table_viewer_page.dart';
 
 class ViewTablesPage extends StatefulWidget {
-  final String apikey;
-  const ViewTablesPage({super.key, required this.apikey});
+  const ViewTablesPage({super.key});
 
   @override
   State<ViewTablesPage> createState() => _ViewTablesPageState();
@@ -19,7 +18,6 @@ class _ViewTablesPageState extends State<ViewTablesPage> {
     super.initState();
     _loadTables();
   }
-
   Future<void> _loadTables() async {
     final names = await DatabaseService.instance.executeQuery("tables");
     final allNames = names
@@ -93,7 +91,6 @@ class _ViewTablesPageState extends State<ViewTablesPage> {
                     MaterialPageRoute(
                       builder: (_) => TableViewerPage(
                         tableName: tableName,
-                        apikey: widget.apikey,
                       ),
                     ),
                   );
@@ -121,7 +118,52 @@ class _ViewTablesPageState extends State<ViewTablesPage> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.deepPurpleAccent),
+                    trailing: IconButton(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Delete "$tableName"?',style: TextStyle(color: Colors.white),),
+                            backgroundColor: Colors.grey.shade900,
+                            content: Text('Are you sure you want to permanently delete this table?',style: TextStyle(color: Colors.white),),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel',style: TextStyle(color: Colors.white),),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                child: const Text('Delete',style: TextStyle(color: Colors.white),),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          await DatabaseService.instance.deleteTable(tableName);
+                          setState(() {
+                            tableNames.removeAt(index);
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Center(child: Text('Table "$tableName" deleted')),
+                              backgroundColor: Colors.redAccent,
+                              duration: Duration(
+                                seconds: 2
+                              ),
+                            ),
+                          );
+                        }
+                      },
+
+                      icon: const Icon(
+                        Icons.delete,
+                        size: 27,
+                        color: Colors.red,
+                      ),
+                    ),
                   ),
                 ),
               ),

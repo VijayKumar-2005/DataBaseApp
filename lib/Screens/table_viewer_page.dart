@@ -3,12 +3,10 @@ import '../Services/database_services.dart';
 
 class TableViewerPage extends StatefulWidget {
   final String tableName;
-  final String apikey;
 
   const TableViewerPage({
     super.key,
     required this.tableName,
-    required this.apikey,
   });
 
   @override

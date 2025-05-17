@@ -91,7 +91,7 @@ class DatabaseService {
           results.add(result.isNotEmpty
               ? result.map((row) => row['name'].toString()).join('\n')
               : 'No tables found.');
-        } else if (lowered.startsWith('select')) {
+        } else if (lowered.startsWith('select') || lowered.startsWith('pragma')) {
           final rows = await db.rawQuery(statement);
           results.add(rows.isNotEmpty
               ? rows.map((row) => _formatRow(row)).join('\n')
@@ -156,5 +156,10 @@ class DatabaseService {
     final directory = await getDatabasesPath();
     String dbPath = '$directory/$dbName';
     return dbPath;
+  }
+
+  Future<void> deleteTable(String tableName) async {
+    final db = await database;
+    await db.execute('DROP TABLE IF EXISTS "$tableName"');
   }
 }
