@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import '../Services/message.dart';
 import '../Services/genkit_service.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -14,12 +16,23 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   late GenkitService _genkitService;
   final ScrollController _scrollController = ScrollController();
+  late Box<Message> _chatBox;
 
   @override
   void initState() {
     super.initState();
     _genkitService = GenkitService(apiKey: widget.apikey);
-    _addBotMessage("Hello! I'm your AI SQL assistant. How can I help you? 😊");
+    _initChat();
+  }
+
+  Future<void> _initChat() async {
+    _chatBox = Hive.box<Message>('chatBox');
+    setState(() {
+      _messages.addAll(_chatBox.values);
+    });
+    if (_messages.isEmpty) {
+      _addBotMessage("Hello! I'm your AI SQL assistant. How can I help you? 😊");
+    }
   }
 
   @override
@@ -41,38 +54,39 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _addBotMessage(String text) {
+    final msg = Message(text: text, isMe: false, timestamp: DateTime.now());
     setState(() {
-      _messages.add(Message(
-        text: text,
-        isMe: false,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(msg);
     });
+    if (text != "Thinking...") {
+      _chatBox.add(msg);
+    }
     _scrollToBottom();
   }
+
 
   Future<void> _getBotResponse(String message) async {
     _addBotMessage("Thinking...");
     try {
       final responses = await _genkitService.processUserQuery(message);
       setState(() {
-        _messages.removeLast(); // Remove "Thinking..."
+        _messages.removeLast();
         for (final res in responses) {
-          _messages.add(Message(
-            text: res,
-            isMe: false,
-            timestamp: DateTime.now(),
-          ));
+          final botMsg = Message(text: res, isMe: false, timestamp: DateTime.now());
+          _messages.add(botMsg);
+          _chatBox.add(botMsg);
         }
       });
     } catch (e) {
       setState(() {
-        _messages.removeLast(); // Remove "Thinking..." on error
-        _messages.add(Message(
+        _messages.removeLast();
+        final errMsg = Message(
           text: "Sorry, an error occurred. Please try again.",
           isMe: false,
           timestamp: DateTime.now(),
-        ));
+        );
+        _messages.add(errMsg);
+        _chatBox.add(errMsg);
       });
     }
     _scrollToBottom();
@@ -80,17 +94,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-    final message = _messageController.text;
+    final message = Message(
+      text: _messageController.text.trim(),
+      isMe: true,
+      timestamp: DateTime.now(),
+    );
     _messageController.clear();
     setState(() {
-      _messages.add(Message(
-        text: message,
-        isMe: true,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(message);
     });
+    _chatBox.add(message);
     _scrollToBottom();
-    _getBotResponse(message); // Process immediately without delay
+    _getBotResponse(message.text);
   }
 
   @override
@@ -229,16 +244,4 @@ class _ChatScreenState extends State<ChatScreen> {
   String _formatTime(DateTime timestamp) {
     return "${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}";
   }
-}
-
-class Message {
-  final String text;
-  final bool isMe;
-  final DateTime timestamp;
-
-  Message({
-    required this.text,
-    required this.isMe,
-    required this.timestamp,
-  });
 }

@@ -116,7 +116,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const ListTile(
             title: Text('Version', style: TextStyle(color: Colors.white)),
-            subtitle: Text('1.0.0', style: TextStyle(color: Colors.white54)),
+            subtitle: Text('1.0.1', style: TextStyle(color: Colors.white54)),
             leading: Icon(Icons.verified, color: Colors.white70),
           ),
         ],

@@ -2,11 +2,15 @@ import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/hive_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:hive_flutter/adapters.dart';
 import 'Services/database_services.dart';
+import 'Services/message.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(MessageAdapter());
+  await Hive.openBox<Message>('chatBox');
   await HiveService.openBox();
   await DatabaseService.instance.initialize();
   await dotenv.load();
