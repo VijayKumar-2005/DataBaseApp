@@ -1,4 +1,4 @@
-import 'package:databaseapp/Screens/sqlhomepage.dart';
+import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Services/hive_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'SQL Chatbot',
       debugShowCheckedModeBanner: false,
-      home: SqlHomePage(apikey: apikey),
+      home: LoginPage(apikey: apikey,),
     );
   }
 }

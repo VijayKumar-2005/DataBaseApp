@@ -1,5 +1,6 @@
 import 'package:databaseapp/Screens/chatscreen.dart';
 import 'package:databaseapp/Screens/console.dart';
+import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Screens/settings_page.dart';
 import 'package:databaseapp/Screens/view_tables.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,18 @@ class SqlHomePage extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.settings, color: Colors.white),
                 title: Text('Settings', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginPage(apikey: apikey)),
+                );
+              },
+              child: ListTile(
+                leading: Icon(Icons.logout, color: Colors.red),
+                title: Text('Log Out', style: TextStyle(color: Colors.red)),
               ),
             ),
           ],
