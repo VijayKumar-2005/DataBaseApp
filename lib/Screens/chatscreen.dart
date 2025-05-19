@@ -24,7 +24,12 @@ class _ChatScreenState extends State<ChatScreen> {
     _genkitService = GenkitService(apiKey: widget.apikey);
     _initChat();
   }
-
+  Future<void> _clearChatHistory() async {
+    await _chatBox.clear();
+    setState(() {
+      _messages.clear();
+    });
+  }
   Future<void> _initChat() async {
     _chatBox = Hive.box<Message>('chatBox');
     setState(() {
@@ -124,6 +129,47 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: Text('Choose an Option'),
+                    children: <Widget>[
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Handle Option 1
+                        },
+                        child: Text('Option 1'),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Handle Option 2
+                        },
+                        child: Text('Option 2'),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Handle Option 3
+                        },
+                        child: Text('Option 3'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            icon: Icon(
+              Icons.more_vert,
+              color: Colors.red,
+            ),
+          )
+        ],
       ),
       body: Column(
         children: [

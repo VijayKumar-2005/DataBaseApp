@@ -3,7 +3,7 @@ import 'package:databaseapp/Screens/console.dart';
 import 'package:databaseapp/Screens/settings_page.dart';
 import 'package:databaseapp/Screens/view_tables.dart';
 import 'package:flutter/material.dart';
-
+import 'package:hive/hive.dart';
 import 'export_page.dart';
 
 class SqlHomePage extends StatelessWidget {
@@ -52,6 +52,38 @@ class SqlHomePage extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.settings, color: Colors.white),
                 title: Text('Settings', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            GestureDetector(
+              onTap: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.grey.shade900,
+                    title: Text('Confirm',style: TextStyle(color: Colors.white),),
+                    content: Text('Are you sure you want to clear all chat history?',style: TextStyle(color: Colors.white),),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text('Cancel')),
+                      TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text('Clear')),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  final box = await Hive.openBox('chatBox');
+                  await box.clear();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Chat history cleared')),
+                  );
+                }
+              },
+              child: ListTile(
+                leading: Icon(Icons.delete_forever_outlined, color: Colors.red),
+                title: Text('Clear Chat History', style: TextStyle(color: Colors.red)),
               ),
             ),
           ],
