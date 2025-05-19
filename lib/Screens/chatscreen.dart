@@ -30,6 +30,24 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.clear();
     });
   }
+  void handlePopUp(int index) {
+    switch(index) {
+      case 0 :
+        _clearChatHistory();
+        break;
+      default :
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "select a valid pop up option"
+            ),
+            duration: Duration(
+              seconds: 3
+            ),
+          )
+        );
+    }
+  }
   Future<void> _initChat() async {
     _chatBox = Hive.box<Message>('chatBox');
     setState(() {
@@ -118,7 +136,11 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('SQL Chatbot'),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+        ),
+        title: const Text('SQL Chatbot',style: TextStyle(color: Colors.white),),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -130,43 +152,42 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return SimpleDialog(
-                    title: Text('Choose an Option'),
-                    children: <Widget>[
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Handle Option 1
-                        },
-                        child: Text('Option 1'),
-                      ),
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Handle Option 2
-                        },
-                        child: Text('Option 2'),
-                      ),
-                      SimpleDialogOption(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Handle Option 3
-                        },
-                        child: Text('Option 3'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            icon: Icon(
-              Icons.more_vert,
-              color: Colors.red,
+      TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 600),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: child,
+        );
+      },
+      child: PopupMenuButton<int>(
+        color: Colors.grey.shade900,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 8,
+        onSelected: handlePopUp,
+        itemBuilder: (BuildContext context) {
+          return [
+              PopupMenuItem(
+                value: 0,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                      SizedBox(width: 10),
+                    Text(
+                      'Clear Chat',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+            ];
+          },
+            icon: Icon(Icons.more_vert, color: Colors.white),
             ),
           )
         ],
