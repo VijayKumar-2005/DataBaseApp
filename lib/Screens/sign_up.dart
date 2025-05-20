@@ -2,28 +2,22 @@ import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
 import 'package:flutter/material.dart';
-
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required this.apikey});
   final String apikey;
-
   @override
   State<SignUp> createState() => _SignUpState();
 }
-
 class _SignUpState extends State<SignUp> {
   final AuthService _auth = AuthService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   bool isLoading = false;
-
   Future<void> _signUp() async {
     setState(() {
       isLoading = true;
     });
-
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
