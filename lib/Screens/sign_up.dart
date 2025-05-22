@@ -2,30 +2,31 @@ import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
 import 'package:flutter/material.dart';
+
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required this.apikey});
   final String apikey;
+
   @override
   State<SignUp> createState() => _SignUpState();
 }
+
 class _SignUpState extends State<SignUp> {
   final AuthService _auth = AuthService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool isLoading = false;
+
   Future<void> _signUp() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
+
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("All fields are required")),
       );
@@ -46,9 +47,15 @@ class _SignUpState extends State<SignUp> {
       );
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -164,12 +171,13 @@ class _SignUpState extends State<SignUp> {
                         transitionDuration: const Duration(milliseconds: 1000),
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             LoginPage(apikey: widget.apikey),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           const begin = Offset(-1.0, 0.0);
                           const end = Offset.zero;
                           const curve = Curves.ease;
-                          var tween = Tween(begin: begin, end: end)
-                              .chain(CurveTween(curve: curve));
+                          var tween =
+                          Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                           var offsetAnimation = animation.drive(tween);
                           return SlideTransition(
                             position: offsetAnimation,

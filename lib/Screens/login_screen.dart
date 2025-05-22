@@ -1,19 +1,23 @@
 import 'package:databaseapp/Screens/sign_up.dart';
 import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.apikey});
   final String apikey;
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
+
 class _LoginPageState extends State<LoginPage> {
-  final auth = AuthService();
+  final AuthService auth = AuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   Future<void> signin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -21,7 +25,9 @@ class _LoginPageState extends State<LoginPage> {
     if (user != null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => SqlHomePage(apikey: widget.apikey)),
+        MaterialPageRoute(
+          builder: (context) => SqlHomePage(apikey: widget.apikey),
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -106,8 +112,9 @@ class _LoginPageState extends State<LoginPage> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    validator: (value) =>
-                    value != null && value.length >= 6 ? null : 'Password must be at least 6 characters',
+                    validator: (value) => value != null && value.length >= 6
+                        ? null
+                        : 'Password must be at least 6 characters',
                   ),
                   const SizedBox(height: 30),
                   SizedBox(
@@ -143,11 +150,13 @@ class _LoginPageState extends State<LoginPage> {
                           transitionDuration: const Duration(milliseconds: 1000),
                           pageBuilder: (context, animation, secondaryAnimation) =>
                               SignUp(apikey: widget.apikey),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
                             const begin = Offset(1.0, 0.0);
                             const end = Offset.zero;
                             const curve = Curves.ease;
-                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            var tween = Tween(begin: begin, end: end)
+                                .chain(CurveTween(curve: curve));
                             var offsetAnimation = animation.drive(tween);
                             return SlideTransition(
                               position: offsetAnimation,
@@ -163,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
