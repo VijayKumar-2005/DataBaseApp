@@ -17,11 +17,18 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   Future<void> signin() async {
+    setState(() => isLoading = true);
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
     User? user = await auth.signIn(email, password);
+
+    setState(() => isLoading = false);
+
     if (user != null) {
       Navigator.pushReplacement(
         context,
@@ -127,12 +134,16 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {
+                      onPressed: isLoading
+                          ? null
+                          : () {
                         if (_formKey.currentState!.validate()) {
                           signin();
                         }
                       },
-                      child: const Text(
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
                         'Login',
                         style: TextStyle(
                           color: Colors.white,
