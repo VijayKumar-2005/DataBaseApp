@@ -1,7 +1,9 @@
 import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
+import 'package:databaseapp/Services/firestore_service.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required this.apikey});
@@ -13,6 +15,7 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   final AuthService _auth = AuthService();
+  final FirestoreService _firestore = FirestoreService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -36,6 +39,16 @@ class _SignUpState extends State<SignUp> {
     try {
       final user = await _auth.signUp(email, password);
       if (user != null) {
+        await _firestore.setDocument(
+          'users',
+          user.uid,
+          {
+            'name': name,
+            'email': email,
+            'uid': user.uid,
+            'createdAt': FieldValue.serverTimestamp(),
+          },
+        );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => SqlHomePage(apikey: widget.apikey)),
