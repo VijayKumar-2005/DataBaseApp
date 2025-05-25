@@ -3,13 +3,13 @@ import 'package:databaseapp/Screens/console.dart';
 import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Screens/settings_page.dart';
 import 'package:databaseapp/Screens/view_tables.dart';
+import 'package:databaseapp/Services/firebase_authservice.dart';
 import 'package:flutter/material.dart';
 import 'export_page.dart';
-
+final AuthService auth = AuthService();
 class SqlHomePage extends StatelessWidget {
   final String apikey;
   const SqlHomePage({super.key, required this.apikey});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +55,8 @@ class SqlHomePage extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                await auth.signOut();
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => LoginPage(apikey: apikey)),

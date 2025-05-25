@@ -1,5 +1,5 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:databaseapp/Screens/login_screen.dart';
-import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
 import 'package:databaseapp/Services/firestore_service.dart';
 import 'package:flutter/material.dart';
@@ -64,9 +64,23 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             'createdAt': FieldValue.serverTimestamp(),
           },
         );
+        Flushbar(
+          title: "Verify Email",
+          message: "A verification link has been sent to your email.",
+          icon: const Icon(Icons.email_outlined, size: 28.0, color: Colors.greenAccent),
+          leftBarIndicatorColor: Colors.greenAccent,
+          duration: const Duration(seconds: 4),
+          backgroundColor: Colors.black87,
+          borderRadius: BorderRadius.circular(8),
+          margin: const EdgeInsets.all(16),
+          flushbarPosition: FlushbarPosition.BOTTOM,
+          animationDuration: const Duration(milliseconds: 500),
+        ).show(context);
+
+        await Future.delayed(const Duration(seconds: 1));
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => SqlHomePage(apikey: widget.apikey)),
+          MaterialPageRoute(builder: (_) => LoginPage(apikey: widget.apikey)),
         );
       }
     } catch (e) {
@@ -93,7 +107,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -124,7 +137,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    // const SizedBox(height: 40),
                     Card(
                       color: Colors.white10,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -149,8 +161,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                     borderSide: BorderSide.none,
                                   ),
                                 ),
-                                validator: (value) =>
-                                value != null && value.isNotEmpty ? null : 'Enter your name',
+                                validator: (value) => value != null && value.isNotEmpty
+                                    ? null
+                                    : 'Enter your name',
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
@@ -229,8 +242,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                       transitionDuration: const Duration(milliseconds: 900),
                                       pageBuilder: (context, animation, secondaryAnimation) =>
                                           LoginPage(apikey: widget.apikey),
-                                      transitionsBuilder:
-                                          (context, animation, secondaryAnimation, child) {
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                         final tween = Tween(begin: const Offset(-1.0, 0.0), end: Offset.zero)
                                             .chain(CurveTween(curve: Curves.easeInOut));
                                         return SlideTransition(

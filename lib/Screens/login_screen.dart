@@ -3,10 +3,12 @@ import 'package:databaseapp/Screens/sqlhomepage.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:another_flushbar/flushbar.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, required this.apikey});
+  const LoginPage({super.key, required this.apikey, this.flushbarMessage});
   final String apikey;
+  final String? flushbarMessage;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -31,6 +33,23 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+
+    if (widget.flushbarMessage != null) {
+      Future.delayed(Duration.zero, () {
+        Flushbar(
+          title: "Verify Email",
+          message: widget.flushbarMessage!,
+          icon: const Icon(Icons.email_outlined, size: 28.0, color: Colors.greenAccent),
+          leftBarIndicatorColor: Colors.greenAccent,
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.black87,
+          borderRadius: BorderRadius.circular(8),
+          margin: const EdgeInsets.all(16),
+          flushbarPosition: FlushbarPosition.BOTTOM,
+          animationDuration: const Duration(milliseconds: 500),
+        ).show(context);
+      });
+    }
   }
 
   Future<void> signin() async {
@@ -40,17 +59,43 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
     User? user = await auth.signIn(email, password);
     setState(() => isLoading = false);
-
     if (user != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SqlHomePage(apikey: widget.apikey)),
-      );
+      if (user.emailVerified) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SqlHomePage(apikey: widget.apikey)),
+        );
+      } else {
+        // User exists but email not verified
+        Flushbar(
+          title: "Login Failed",
+          message: "Please verify your email before logging in.",
+          icon: const Icon(Icons.error_outline, size: 28.0, color: Colors.orangeAccent),
+          leftBarIndicatorColor: Colors.orangeAccent,
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.black45,
+          borderRadius: BorderRadius.circular(8),
+          margin: const EdgeInsets.all(16),
+          animationDuration: const Duration(milliseconds: 500),
+          flushbarPosition: FlushbarPosition.BOTTOM,
+        ).show(context);
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login failed. Please check your credentials.")),
-      );
+      // User null means credentials invalid
+      Flushbar(
+        title: "Login Failed",
+        message: "Invalid email or password.",
+        icon: const Icon(Icons.error_outline, size: 28.0, color: Colors.redAccent),
+        leftBarIndicatorColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+        backgroundColor: Colors.black45,
+        borderRadius: BorderRadius.circular(8),
+        margin: const EdgeInsets.all(16),
+        animationDuration: const Duration(milliseconds: 500),
+        flushbarPosition: FlushbarPosition.BOTTOM,
+      ).show(context);
     }
+
   }
 
   @override
@@ -67,7 +112,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -98,7 +142,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         ),
                       ),
                     ),
-                    // const SizedBox(height: 20),
                     Card(
                       color: Colors.white10,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -123,9 +166,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     borderSide: BorderSide.none,
                                   ),
                                 ),
-                                validator: (value) => value != null && value.contains('@')
-                                    ? null
-                                    : 'Enter a valid email',
+                                validator: (value) => value != null && value.contains('@') ? null : 'Enter a valid email',
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
@@ -143,9 +184,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     borderSide: BorderSide.none,
                                   ),
                                 ),
-                                validator: (value) => value != null && value.length >= 6
-                                    ? null
-                                    : 'Password must be at least 6 characters',
+                                validator: (value) => value != null && value.length >= 6 ? null : 'Password must be at least 6 characters',
                               ),
                               const SizedBox(height: 30),
                               SizedBox(
@@ -184,11 +223,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     context,
                                     PageRouteBuilder(
                                       transitionDuration: const Duration(milliseconds: 900),
-                                      pageBuilder: (context, animation, secondaryAnimation) =>
-                                          SignUp(apikey: widget.apikey),
+                                      pageBuilder: (context, animation, secondaryAnimation) => SignUp(apikey: widget.apikey),
                                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                        final tween = Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
-                                            .chain(CurveTween(curve: Curves.easeInOut));
+                                        final tween = Tween(begin: const Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.easeInOut));
                                         return SlideTransition(
                                           position: animation.drive(tween),
                                           child: child,

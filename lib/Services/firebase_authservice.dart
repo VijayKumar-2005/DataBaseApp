@@ -9,12 +9,17 @@ class AuthService {
         email: email,
         password: password,
       );
-      return userCredential.user;
+      User? user = userCredential.user;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
+      return user;
     } catch (e) {
       print('Sign Up Error: $e');
       return null;
     }
   }
+
   Future<User?> signIn(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -26,15 +31,18 @@ class AuthService {
       return null;
     }
   }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
   Future<bool> isLoggedIN() async {
-    if(_auth.currentUser != null && _auth.currentUser!.emailVerified) {
+    if (_auth.currentUser != null && _auth.currentUser!.emailVerified) {
       return true;
     }
     return false;
   }
+
   User? getCurrentUser() {
     return _auth.currentUser;
   }
