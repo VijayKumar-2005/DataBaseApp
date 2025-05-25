@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:databaseapp/Services/database_services.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:databaseapp/Screens/table_viewer_page.dart';
-import '../Services/database_services.dart';
+import 'package:sqflite/sqflite.dart';
+import '../Services/hive_service.dart';
 
 class DatabaseInfoPage extends StatefulWidget {
   const DatabaseInfoPage({super.key});
@@ -15,9 +17,8 @@ class DatabaseInfoPage extends StatefulWidget {
 
 class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
   List<String> _tables = [];
-  final String _dbPath = '';
+  late String _dbPath = '';
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -25,15 +26,27 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
   }
 
   Future<void> _loadTables() async {
-    final names = await DatabaseService.instance.executeQuery("tables");
-    final allNames = names
-        .expand((name) => name.split('\n'))
-        .where((name) => name.isNotEmpty && !name.startsWith('No tables'))
-        .toList();
+    String dbName = await HiveService.getValue("databsename");
+    if (!dbName.endsWith('.db')) dbName = '$dbName.db';
+    final directory = await getDatabasesPath();
+    String dbLocation = join(directory, dbName);
+
+    final db = await openDatabase(
+      dbLocation,
+      version: 1,
+    );
+
+    final tableList = await DatabaseService.instance.executeQuery("tables");
+
     setState(() {
-      _tables = allNames;
+      _dbPath = dbLocation;
+      _tables = tableList
+          .expand((name) => name.split('\n'))
+          .where((name) => name.isNotEmpty && !name.startsWith('No tables'))
+          .toList();
       _isLoading = false;
     });
+    await db.close();
   }
 
   Future<void> _exportDatabase(BuildContext context) async {

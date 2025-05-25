@@ -154,8 +154,7 @@ class DatabaseService {
 
   Future<String> getDatabaseLocation(String dbName) async {
     final directory = await getDatabasesPath();
-    String dbPath = '$directory/$dbName';
-    return dbPath;
+    return join(directory,dbName);
   }
 
   Future<void> deleteTable(String tableName) async {

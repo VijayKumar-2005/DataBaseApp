@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:databaseapp/Screens/chatscreen.dart';
 import 'package:databaseapp/Screens/console.dart';
+import 'package:databaseapp/Screens/import_page.dart';
 import 'package:databaseapp/Screens/login_screen.dart';
 import 'package:databaseapp/Screens/settings_page.dart';
 import 'package:databaseapp/Screens/view_tables.dart';
@@ -139,7 +140,15 @@ class _SqlHomePageState extends State<SqlHomePage> {
             ),
             const SizedBox(height: 12),
             _DrawerItem(
-              icon: Icons.import_export,
+              icon: Icons.import_export_outlined,
+              label: 'Import Database',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ImportDatabasePage()),
+              ),
+            ),
+            _DrawerItem(
+              icon: Icons.import_export_outlined,
               label: 'Export Database',
               onTap: () => Navigator.push(
                 context,
