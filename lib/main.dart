@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'SQL Chatbot',
       debugShowCheckedModeBanner: false,
-      home: FirebaseAuth.instance.currentUser != null
+      home: (FirebaseAuth.instance.currentUser!=null && FirebaseAuth.instance.currentUser!.emailVerified)
           ? SqlHomePage(apikey: apikey)
           : LoginPage(apikey: apikey),
     );

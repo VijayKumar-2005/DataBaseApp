@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:databaseapp/Screens/chatscreen.dart';
 import 'package:databaseapp/Screens/console.dart';
 import 'package:databaseapp/Screens/login_screen.dart';
@@ -5,79 +6,46 @@ import 'package:databaseapp/Screens/settings_page.dart';
 import 'package:databaseapp/Screens/view_tables.dart';
 import 'package:databaseapp/Services/firebase_authservice.dart';
 import 'package:flutter/material.dart';
+
 import 'export_page.dart';
+
 final AuthService auth = AuthService();
-class SqlHomePage extends StatelessWidget {
+final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+class SqlHomePage extends StatefulWidget {
   final String apikey;
   const SqlHomePage({super.key, required this.apikey});
+
+  @override
+  _SqlHomePageState createState() => _SqlHomePageState();
+}
+
+class _SqlHomePageState extends State<SqlHomePage> {
+  late Future<DocumentSnapshot<Map<String, dynamic>>> _userDoc;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = auth.getCurrentUser()?.uid;
+    if (uid != null) {
+      _userDoc = _firestore.collection('users').doc(uid).get();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        backgroundColor: Colors.grey.shade900,
-        child: ListView(
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.deepPurple, Colors.purpleAccent],
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  'SQL Tools Menu',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DatabaseInfoPage()),
-                );
-              },
-              child: ListTile(
-                leading: Icon(Icons.import_export, color: Colors.white),
-                title: Text('Export database', style: TextStyle(color: Colors.white)),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsPage()),
-                );
-              },
-              child: ListTile(
-                leading: Icon(Icons.settings, color: Colors.white),
-                title: Text('Settings', style: TextStyle(color: Colors.white)),
-              ),
-            ),
-            GestureDetector(
-              onTap: () async {
-                await auth.signOut();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginPage(apikey: apikey)),
-                );
-              },
-              child: ListTile(
-                leading: Icon(Icons.logout, color: Colors.red),
-                title: Text('Log Out', style: TextStyle(color: Colors.red)),
-              ),
-            ),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(context),
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        title: const Text('SQL Tools', style: TextStyle(color: Colors.white)),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('SQL Tools', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
         centerTitle: true,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.deepPurple, Colors.purpleAccent],
+              colors: [Color(0xFF6A1B9A), Color(0xFFE040FB)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -85,27 +53,122 @@ class SqlHomePage extends StatelessWidget {
         ),
       ),
       body: Container(
-        color: const Color(0xFF121212),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF121212), Color(0xFF1D1D1D)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           children: [
-            _SimpleTile(
+            _FeatureCard(
               icon: Icons.chat_bubble_outline,
               title: 'SQL Chatbot',
               subtitle: 'Talk to a smart SQLite assistant',
-              destination: ChatScreen(apikey: apikey),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ChatScreen(apikey: widget.apikey)),
+              ),
             ),
-            _SimpleTile(
+            _FeatureCard(
               icon: Icons.terminal,
               title: 'SQL Console',
               subtitle: 'Run raw SQL queries directly',
-              destination: QueryScreen(),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QueryScreen()),
+              ),
             ),
-            _SimpleTile(
+            _FeatureCard(
               icon: Icons.table_chart_outlined,
               title: 'View Tables',
               subtitle: 'Browse and inspect database tables',
-              destination: ViewTablesPage(),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ViewTablesPage()),
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: Colors.grey.shade900,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              future: _userDoc,
+              builder: (context, snapshot) {
+                String displayName = 'Guest User';
+                String email = '';
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  final data = snapshot.data!.data();
+                  displayName = data?['name'] ?? auth.getCurrentUser()?.email?.split('@').first ?? 'Guest User';
+                  email = auth.getCurrentUser()?.email ?? '';
+                } else if (auth.getCurrentUser() != null) {
+                  email = auth.getCurrentUser()!.email ?? '';
+                }
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF6A1B9A), Color(0xFFE040FB)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Welcome,', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                      const SizedBox(height: 4),
+                      Text(displayName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 2),
+                      Text(email, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            _DrawerItem(
+              icon: Icons.import_export,
+              label: 'Export Database',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DatabaseInfoPage()),
+              ),
+            ),
+            _DrawerItem(
+              icon: Icons.settings,
+              label: 'Settings',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              ),
+            ),
+            const Spacer(),
+            _DrawerItem(
+              icon: Icons.logout,
+              iconColor: Colors.redAccent,
+              label: 'Log Out',
+              labelColor: Colors.redAccent,
+              onTap: () async {
+                await auth.signOut();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginPage(apikey: widget.apikey)),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -113,30 +176,79 @@ class SqlHomePage extends StatelessWidget {
   }
 }
 
-class _SimpleTile extends StatelessWidget {
+class _FeatureCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Widget destination;
+  final VoidCallback onTap;
 
-  const _SimpleTile({
+  const _FeatureCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.destination,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      color: Colors.grey.shade800,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.deepPurpleAccent,
+                child: Icon(icon, size: 28, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color iconColor;
+  final Color labelColor;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.iconColor = Colors.white,
+    this.labelColor = Colors.white,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-      subtitle: Text(subtitle, style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => destination),
-      ),
+      leading: Icon(icon, color: iconColor),
+      title: Text(label, style: TextStyle(color: labelColor)),
+      onTap: onTap,
     );
   }
 }

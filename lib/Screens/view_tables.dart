@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import '../Services/database_services.dart';
 import 'table_viewer_page.dart';
-
 class ViewTablesPage extends StatefulWidget {
   const ViewTablesPage({super.key});
-
   @override
   State<ViewTablesPage> createState() => _ViewTablesPageState();
 }
