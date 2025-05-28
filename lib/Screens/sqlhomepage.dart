@@ -16,14 +16,11 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 class SqlHomePage extends StatefulWidget {
   final String apikey;
   const SqlHomePage({super.key, required this.apikey});
-
   @override
   _SqlHomePageState createState() => _SqlHomePageState();
 }
-
 class _SqlHomePageState extends State<SqlHomePage> {
   late Future<DocumentSnapshot<Map<String, dynamic>>> _userDoc;
-
   @override
   void initState() {
     super.initState();

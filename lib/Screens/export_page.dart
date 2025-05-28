@@ -7,14 +7,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:databaseapp/Screens/table_viewer_page.dart';
 import 'package:sqflite/sqflite.dart';
 import '../Services/hive_service.dart';
-
 class DatabaseInfoPage extends StatefulWidget {
   const DatabaseInfoPage({super.key});
-
   @override
   State<DatabaseInfoPage> createState() => _DatabaseInfoPageState();
 }
-
 class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
   List<String> _tables = [];
   late String _dbPath = '';
@@ -24,20 +21,16 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
     super.initState();
     _loadTables();
   }
-
   Future<void> _loadTables() async {
     String dbName = await HiveService.getValue("databsename");
     if (!dbName.endsWith('.db')) dbName = '$dbName.db';
     final directory = await getDatabasesPath();
     String dbLocation = join(directory, dbName);
-
     final db = await openDatabase(
       dbLocation,
       version: 1,
     );
-
     final tableList = await DatabaseService.instance.executeQuery("tables");
-
     setState(() {
       _dbPath = dbLocation;
       _tables = tableList
@@ -48,7 +41,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
     });
     await db.close();
   }
-
   Future<void> _exportDatabase(BuildContext context) async {
     final file = File(_dbPath);
     if (await file.exists()) {
@@ -65,7 +57,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
       _showSnackBar("Database file not found at $_dbPath",context);
     }
   }
-
   Future<void> _copyDatabaseToExternalStorage(BuildContext context) async {
     final file = File(_dbPath);
     if (await file.exists()) {
@@ -85,7 +76,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
       _showSnackBar("Database file not found to copy",context);
     }
   }
-
   void _showSnackBar(String message,BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -94,7 +84,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ));
     }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,7 +118,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return _buildTableCard(_tables[index],context);
-
               },
             ),
           ),
@@ -157,7 +145,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
       ),
     );
   }
-
   Widget _buildTableCard(String tableName,BuildContext context) {
     return Card(
       elevation: 4,
@@ -218,7 +205,6 @@ class _DatabaseInfoPageState extends State<DatabaseInfoPage> {
       ),
     );
   }
-
   Widget _buildActionButton({
     required IconData icon,
     required String label,

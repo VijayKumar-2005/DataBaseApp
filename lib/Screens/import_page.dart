@@ -3,23 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-
 class ImportDatabasePage extends StatefulWidget {
   const ImportDatabasePage({super.key});
-
   @override
   State<ImportDatabasePage> createState() => _ImportDatabasePageState();
 }
-
 class _ImportDatabasePageState extends State<ImportDatabasePage> {
   String? _statusMessage;
-
   Future<void> _importDatabase() async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.any,
       );
-
       if (result != null && result.files.single.path != null) {
         final pickedPath = result.files.single.path!;
         final fileName = basename(pickedPath);
@@ -31,7 +26,6 @@ class _ImportDatabasePageState extends State<ImportDatabasePage> {
           });
           return;
         }
-
         final pickedFile = File(pickedPath);
         final destinationPath = await getDatabaseLocation(fileName);
         await pickedFile.copy(destinationPath);
@@ -49,12 +43,10 @@ class _ImportDatabasePageState extends State<ImportDatabasePage> {
       });
     }
   }
-
   Future<String> getDatabaseLocation(String dbName) async {
     final directory = await getDatabasesPath();
     return '$directory/$dbName';
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
